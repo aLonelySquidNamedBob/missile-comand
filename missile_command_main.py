@@ -71,6 +71,7 @@ while True:
       missile.move()
 
     # Shoot antimissiles
+    active_silo = None
     if keydown(KEY_ONE) == True and silos[0].missiles > 0 and silos[0].cooldown >= 10: 
       active_silo = silos[0]
     if keydown(KEY_TWO) == True and silos[1].missiles > 0 and silos[1].cooldown >= 10: 
@@ -78,30 +79,35 @@ while True:
     if keydown(KEY_THREE) == True and silos[2].missiles > 0 and silos[2].cooldown >= 10: 
       active_silo = silos[2]
     
-    antimissile = AntiMissile([active_silo.pos.x + 15, active_silo.pos.y], [cursor.pos.x, cursor.pos.y])
-    antimissiles.append(antimissile)
-    silo.cooldown = 0
-    silo.missiles -= 1
+    if active_silo is not None:
+      antimissile = AntiMissile([active_silo.pos.x + 15, active_silo.pos.y], [cursor.pos.x, cursor.pos.y])
+      antimissiles.append(antimissile)
+      silo.cooldown = 0
+      silo.missiles -= 1
 
     # Move antimissiles
-    for am in antimissiles:
-      if not am.exploded:
-        am.move()
-        if am.target_pos.x - 1 < am.pos.x < am.target_pos.x + 1 and am.target_pos.y - 1 < am.pos.y < am.target_pos.y + 1:
-          am.delete()
-      else:
-        am.draw_explosion()
-        if am.explosion_frame_index > 70:
-          am.delete_explosion()
-          antimissiles.remove(am)
-          del am
+    for anti_missile in antimissiles:
+      if not anti_missile.exploded:
+        anti_missile.move()
+        print(f"target : {anti_missile.target_pos.x}, {anti_missile.target_pos.y}")
+        print(f"pos : {anti_missile.pos.x}, {anti_missile.pos.y}")
+        if anti_missile.target_pos.x - 1 < anti_missile.pos.x < anti_missile.target_pos.x + 1 and anti_missile.target_pos.y - 1 < anti_missile.pos.y < anti_missile.target_pos.y + 1:
+          anti_missile.delete()
       
-      # Collision
-      for missile in active_missiles:
-        if am.pos.x - am.explosion_width / 2 < missile.pos.x < am.pos.x + am.explosion_width and am.pos.y - am.explosion_width / 2 < missile.pos.y < am.pos.y + am.explosion_width:
-          missile.delete()
-          active_missiles.remove(missile)
-          del missile
+        # Collision
+        for missile in active_missiles:
+          if anti_missile.pos.x - anti_missile.explosion_width / 2 < missile.pos.x < anti_missile.pos.x + anti_missile.explosion_width and anti_missile.pos.y - anti_missile.explosion_width / 2 < missile.pos.y < anti_missile.pos.y + anti_missile.explosion_width:
+            missile.delete()
+            active_missiles.remove(missile)
+            del missile
+      
+      else:
+        anti_missile.draw_explosion()
+        if anti_missile.explosion_frame_index > 70:
+          anti_missile.delete_explosion()
+          antimissiles.remove(anti_missile)
+          del anti_missile
+      
           
     for missile in active_missiles:
       missile.move()
@@ -130,5 +136,5 @@ while True:
     
     # Cursor
     cursor.move()
-    for am in antimissiles:
-      am.lock.draw()
+    for anti_missile in antimissiles:
+      anti_missile.lock.draw()
