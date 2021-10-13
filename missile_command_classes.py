@@ -1,6 +1,7 @@
 from kandinsky import *
 from ion import *
 from random import randint, choice
+from math import floor
 
 class Pos:
   def __init__(self, pos):
@@ -24,7 +25,7 @@ class Color:
 class Silo:
   def __init__(self, pos, num_of_missiles):
     self.pos = Pos(pos)
-    self.num_of_missile = num_of_missiles
+    self.num_of_missiles = num_of_missiles
     self.size = Pos([30, 10])
     self.cooldown = 0
   
@@ -44,7 +45,7 @@ class Missile:
     self.start_pos = Pos([self.pos.x, self.pos.y])
     self.target_pos = Pos([choice(available_targets).pos.x, choice(available_targets).pos.y])
     self.speed = speed
-    self.movement = (self.target_pos.x - self.pos.x) / (self.target_pos.y - self.pos.y) * self.speed
+    self.movement = Pos([(self.target_pos.x - self.pos.x) / (self.target_pos.y - self.pos.y) * self.speed, self.speed])
     self.summon_frame = randint(1, 2500)
     
   def draw(self):
@@ -97,7 +98,7 @@ class AntiMissile:
   
   def delete(self):
     delete = self.start_pos
-    for i in self.num_of_moves:
+    for i in range(self.num_of_moves):
       delete.x += self.movement.x
       delete.y += self.movement.y
       set_pixel(round(delete.x), round(delete.y), Color.background)
@@ -110,7 +111,7 @@ class AntiMissile:
       round(self.pos.y - self.explosion_width / 2),
       self.explosion_width,
       self.explosion_width,
-      Color.explosion[self.explosion_frame_index // 2]
+      Color.explosion[floor(self.explosion_frame_index / 2) % 2]
     )
     self.explosion_frame_index += 1
 
@@ -150,10 +151,10 @@ class Cursor:
     fill_rect(self.pos.x - self.size, self.pos.y, self.size, 1, Color.cursor)
   
   def delete(self):
-    fill_rect(self.last_pos.x, self.last_pos.y - self.size, 1, self.size, Color.cursor)
-    fill_rect(self.last_pos.x, self.last_pos.y + 1, 1, self.size, Color.cursor)
-    fill_rect(self.last_pos.x + 1, self.last_pos.y, self.size, 1, Color.cursor)
-    fill_rect(self.last_pos.x - self.size, self.last_pos.y, self.size, 1, Color.cursor)
+    fill_rect(self.last_pos.x, self.last_pos.y - self.size, 1, self.size, Color.background)
+    fill_rect(self.last_pos.x, self.last_pos.y + 1, 1, self.size, Color.background)
+    fill_rect(self.last_pos.x + 1, self.last_pos.y, self.size, 1, Color.background)
+    fill_rect(self.last_pos.x - self.size, self.last_pos.y, self.size, 1, Color.background)
 
   def move(self):
     self.last_pos = Pos([self.pos.x, self.pos.y])
@@ -166,8 +167,7 @@ class Cursor:
     if keydown(KEY_DOWN) and self.pos.y < 222 - 30:
       self.pos.y += 1
     
-    if self.last_pos.x != self.pos.x and self.last_pos.y != self.pos.y:
-      self.delete()
+    self.delete()
     self.draw()
 
 
